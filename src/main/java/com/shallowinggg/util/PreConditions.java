@@ -5,6 +5,12 @@ package com.shallowinggg.util;
  */
 public final class PreConditions {
 
+    public static void checkState(boolean expr) {
+        if(!expr) {
+            throw new IllegalStateException();
+        }
+    }
+
     public static void checkState(boolean expr, String formatMsg, Object... objects) {
         if(!expr) {
             throw new IllegalStateException(String.format(formatMsg, objects));

@@ -67,9 +67,9 @@ public interface SuperArray<T extends Number> extends Iterable<T> {
      * 注意：禁止对返回数组调用{@link #free()}操作。当源数组
      * 调用{@link #free()}操作后，不能操作返回数组。
      *
-     * @param fromIndex
-     * @param toIndex
-     * @return
+     * @param fromIndex 开始下标，包含
+     * @param toIndex 结束下标，不包含
+     * @return 子数组
      */
     SuperArray<T> subArray(long fromIndex, long toIndex);
 }

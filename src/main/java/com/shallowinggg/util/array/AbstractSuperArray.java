@@ -4,6 +4,8 @@ package com.shallowinggg.util.array;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
+
 public abstract class AbstractSuperArray<T extends Number> implements SuperArray<T> {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractSuperArray.class);
 
@@ -17,8 +19,19 @@ public abstract class AbstractSuperArray<T extends Number> implements SuperArray
         this.size = size;
     }
 
+    @Override
     public long size() {
         return size;
+    }
+
+    @Override
+    public void sort(Comparator<? super T> c) {
+
+    }
+
+    @Override
+    public void free() {
+        PlatformDependent.freeMemory(memory);
     }
 
     void setByte(long index, byte val) {
@@ -91,8 +104,24 @@ public abstract class AbstractSuperArray<T extends Number> implements SuperArray
         return PlatformDependent.getDouble(memory + index * PrimitiveType.DOUBLE.getSize());
     }
 
-    public void freeMemory() {
-        PlatformDependent.freeMemory(memory);
+    void fill0(long len8, long len4, long len2, long len1) {
+        long index = memory;
+        for(long i = 0; i < len8; ++i) {
+            PlatformDependent.setLong(index, 0);
+            index += 8;
+        }
+        for(long i = 0; i < len4; ++i) {
+            PlatformDependent.setInt(index, 0);
+            index += 4;
+        }
+        for(long i = 0; i < len2; ++i) {
+            PlatformDependent.setShort(index, (short) 0);
+            index += 2;
+        }
+        for(long i = 0; i < len1; ++i) {
+            PlatformDependent.setByte(index, (byte) 0);
+            index++;
+        }
     }
 
     void checkIndex(long index) {

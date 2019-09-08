@@ -8,9 +8,6 @@ public class SuperArrayTest {
     public void testUnsafeByteSuperArray() {
         SuperArray<Byte> byteSuperArray = new UnsafeByteSuperArray(100);
         for(long i = 0; i < 100; ++i) {
-            byteSuperArray.set(i, (byte) i);
-        }
-        for(long i = 0; i < 100; ++i) {
             System.out.println(byteSuperArray.get(i));
         }
 
