@@ -14,10 +14,20 @@ public class SuperArrayTest {
     }
 
     @Test
-    public void testArray() {
-        int[] arr = new int[100];
-        for(int i : arr) {
-            System.out.print(i);
+    public void testClear() {
+        SuperArray<Byte> byteSuperArray = new UnsafeByteSuperArray(100);
+        for(Byte b : byteSuperArray) {
+            System.out.print(b + " ");
+        }
+        System.out.println();
+        SuperArray<Byte> slice = byteSuperArray.slice(10, 20);
+        slice.clear();
+        for(Byte b : slice) {
+            System.out.print(b + " ");
+        }
+        System.out.println();
+        for(Byte b : byteSuperArray) {
+            System.out.print(b + " ");
         }
     }
 }

@@ -1,16 +1,18 @@
 package com.shallowinggg.util.array;
 
+import com.shallowinggg.util.PreConditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Spliterator;
 import java.util.function.Consumer;
 
 import static com.shallowinggg.util.PreConditions.checkNotNull;
 import static com.shallowinggg.util.PreConditions.checkState;
 
+/**
+ * @author dingshimin
+ */
 public class UnsafeByteSuperArray extends AbstractSuperArray<Byte> {
 
     private static final Logger LOG = LoggerFactory.getLogger(UnsafeByteSuperArray.class);
@@ -39,42 +41,35 @@ public class UnsafeByteSuperArray extends AbstractSuperArray<Byte> {
     }
 
     @Override
-    public Spliterator<Byte> spliterator() {
-        return null;
-    }
-
-    @Override
     public Iterator<Byte> iterator() {
         return new Itr();
     }
 
     @Override
     public void clear() {
-        final long sz = size();
-        long tmp;
-        long len4;
-        long len2;
-        long len1;
-
-        long len8 = sz / 8;
-        tmp = sz % 8;
-        len4 = tmp / 4;
-        tmp = tmp % 4;
-        len2 = tmp / 2;
-        len1 = tmp % 2;
-
-        fill0(len8, len4, len2, len1);
+        SuperArrayUtil.clearBytes(size(), this);
     }
 
     @Override
-    public SuperArray<Byte> subArray(long fromIndex, long toIndex) {
+    public SuperArray<Byte> slice(long fromIndex, long len) {
+        return new ByteSlicedSuperArray(this, fromIndex, len);
+    }
+
+    @Override
+    public SuperArray<Byte> duplicate(long fromIndex, long len) {
+        PreConditions.checkIndex(!outOfRange(fromIndex, len, size()),
+                "SuperArray.duplicate(%d, %d)", fromIndex, len);
+        UnsafeByteSuperArray retArray = new UnsafeByteSuperArray(len);
+        copyMemory(memoryAddress() + fromIndex, retArray.memoryAddress(), len);
+        return retArray;
+    }
+
+    @Override
+    public SuperArray<Byte> unwrap() {
         return null;
     }
 
-    private class Itr implements Iterator<Byte> {
-        long cursor;       // index of next element to return
-        long lastRet = -1; // index of last element returned; -1 if no such
-
+    private class Itr extends AbstractItr {
         @Override
         public void remove() {
             checkState(lastRet >= 0);
@@ -82,34 +77,29 @@ public class UnsafeByteSuperArray extends AbstractSuperArray<Byte> {
             cursor = lastRet;
             lastRet = -1;
         }
+    }
 
-        @Override
-        public void forEachRemaining(Consumer<? super Byte> action) {
-            long i = cursor;
-            final long size = size();
-            if(i > size) {
-                return;
-            }
-            while (i != size) {
-                action.accept(get(i++));
-            }
-            cursor = i;
-            lastRet = i - 1;
+    private static class ByteSlicedSuperArray extends AbstractSlicedSuperArray<Byte> {
+        ByteSlicedSuperArray(SuperArray<Byte> superArray, long from, long len) {
+            super(superArray, from, len);
         }
 
         @Override
-        public boolean hasNext() {
-            return cursor != size();
+        public Iterator<Byte> iterator() {
+            return new AbstractItr() {
+                @Override
+                public void remove() {
+                    checkState(lastRet >= 0);
+                    set(lastRet, (byte)0);
+                    cursor = lastRet;
+                    lastRet = -1;
+                }
+            };
         }
 
         @Override
-        public Byte next() {
-            long i = cursor;
-            if(i > size()) {
-                throw new NoSuchElementException();
-            }
-            cursor++;
-            return get(lastRet = i);
+        public void clear() {
+            SuperArrayUtil.clearBytes(size(), this);
         }
     }
 }

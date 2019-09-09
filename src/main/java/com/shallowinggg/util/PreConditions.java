@@ -42,4 +42,16 @@ public final class PreConditions {
         }
         return obj;
     }
+
+    public static void checkIndex(boolean expr) {
+        if(!expr) {
+            throw new IndexOutOfBoundsException();
+        }
+    }
+
+    public static void checkIndex(boolean expr, String formatMsg, Object... objects) {
+        if(!expr) {
+            throw new IndexOutOfBoundsException(String.format(formatMsg, objects));
+        }
+    }
 }

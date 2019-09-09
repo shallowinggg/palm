@@ -32,6 +32,13 @@ public interface SuperArray<T extends Number> extends Iterable<T> {
      */
     long size();
 
+    /**
+     * 获取数组在内存中的起始地址
+     *
+     * @return 内存地址
+     */
+    long memoryAddress();
+
     @Override
     Iterator<T> iterator();
 
@@ -59,17 +66,21 @@ public interface SuperArray<T extends Number> extends Iterable<T> {
     void free();
 
     /**
-     * 获取[fromIndex, toIndex)范围内的元素。如果fromIndex
+     * 获取[fromIndex, toIndex = fromIndex + len)范围内的元素。如果fromIndex
      * 与toIndex的值相等，那么将会返回一个空数组。返回的数组
      * 由源数组支撑，换句话说，对返回的数组进行改动将会影响
      * 源数组，反之亦然。
      *
-     * 注意：禁止对返回数组调用{@link #free()}操作。当源数组
+     * 注意：禁止对返回数组调用{@link #free()}操作，当源数组
      * 调用{@link #free()}操作后，不能操作返回数组。
      *
      * @param fromIndex 开始下标，包含
-     * @param toIndex 结束下标，不包含
+     * @param len 长度
      * @return 子数组
      */
-    SuperArray<T> subArray(long fromIndex, long toIndex);
+    SuperArray<T> slice(long fromIndex, long len);
+
+    SuperArray<T> duplicate(long fromIndex, long len);
+
+    SuperArray<T> unwrap();
 }

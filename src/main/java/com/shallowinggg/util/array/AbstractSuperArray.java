@@ -5,23 +5,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.function.Consumer;
 
 public abstract class AbstractSuperArray<T extends Number> implements SuperArray<T> {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractSuperArray.class);
 
     private final long memory;
     private final long size;
-    private final PrimitiveType type;
 
     AbstractSuperArray(long size, PrimitiveType type) {
         this.memory = PlatformDependent.allocateMemory(size * type.getSize());
-        this.type = type;
         this.size = size;
+    }
+
+    AbstractSuperArray(long size) {
+        this.size = size;
+        this.memory = 0;
     }
 
     @Override
     public long size() {
         return size;
+    }
+
+    @Override
+    public long memoryAddress() {
+        return memory;
     }
 
     @Override
@@ -105,7 +116,7 @@ public abstract class AbstractSuperArray<T extends Number> implements SuperArray
     }
 
     void fill0(long len8, long len4, long len2, long len1) {
-        long index = memory;
+        long index = memoryAddress();
         for(long i = 0; i < len8; ++i) {
             PlatformDependent.setLong(index, 0);
             index += 8;
@@ -124,7 +135,11 @@ public abstract class AbstractSuperArray<T extends Number> implements SuperArray
         }
     }
 
-    void checkIndex(long index) {
+    void copyMemory(long src, long dest, long bytes) {
+        PlatformDependent.copyMemory(src, dest, bytes);
+    }
+
+    private void checkIndex(long index) {
         if (outOfRange(index, size())) {
             throw new ArrayIndexOutOfBoundsException("Index: " + index + ", Size: " + size);
         }
@@ -132,6 +147,10 @@ public abstract class AbstractSuperArray<T extends Number> implements SuperArray
 
     private static boolean outOfRange(long index, long size) {
         return (index | (size - index)) < 0;
+    }
+
+    static boolean outOfRange(long from, long len, long size) {
+        return (from | len | from + len | size - (from + len)) < 0;
     }
 
     public enum PrimitiveType {
@@ -180,4 +199,37 @@ public abstract class AbstractSuperArray<T extends Number> implements SuperArray
         }
     }
 
+    class AbstractItr implements Iterator<T> {
+        long cursor;       // index of next element to return
+        long lastRet = -1; // index of last element returned; -1 if no such
+
+        @Override
+        public void forEachRemaining(Consumer<? super T> action) {
+            long i = cursor;
+            final long size = size();
+            if(i > size) {
+                return;
+            }
+            while (i != size) {
+                action.accept(get(i++));
+            }
+            cursor = i;
+            lastRet = i - 1;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return cursor != size();
+        }
+
+        @Override
+        public T next() {
+            long i = cursor;
+            if(i > size()) {
+                throw new NoSuchElementException();
+            }
+            cursor++;
+            return get(lastRet = i);
+        }
+    }
 }

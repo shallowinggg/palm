@@ -235,6 +235,10 @@ public class PlatformDependent {
         return UNSAFE.allocateMemory(sz);
     }
 
+    static void copyMemory(long src, long dest, long bytes) {
+        UNSAFE.copyMemory(src, dest, bytes);
+    }
+
     static void freeMemory(long address) {
         UNSAFE.freeMemory(address);
     }
