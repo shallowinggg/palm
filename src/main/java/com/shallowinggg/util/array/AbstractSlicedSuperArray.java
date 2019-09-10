@@ -27,11 +27,13 @@ public abstract class AbstractSlicedSuperArray<T extends Number> extends Abstrac
 
     @Override
     public void set(long index, T val) {
+        checkIndex(index);
         unwrap().set(idx(index), val);
     }
 
     @Override
     public T get(long index) {
+        checkIndex(index);
         return unwrap().get(idx(index));
     }
 
@@ -42,11 +44,13 @@ public abstract class AbstractSlicedSuperArray<T extends Number> extends Abstrac
 
     @Override
     public SuperArray<T> slice(long fromIndex, long len) {
+        checkSliceOutOfBounds(this, fromIndex, len);
         return unwrap().slice(idx(fromIndex), len);
     }
 
     @Override
     public SuperArray<T> duplicate(long fromIndex, long len) {
+        checkSliceOutOfBounds(this, fromIndex, len);
         return unwrap().duplicate(idx(fromIndex), len);
     }
 

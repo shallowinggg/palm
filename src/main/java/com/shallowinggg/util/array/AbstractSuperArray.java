@@ -1,16 +1,25 @@
 package com.shallowinggg.util.array;
 
 
+import com.shallowinggg.util.PreConditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
+/**
+ * @author dingshimin
+ */
 public abstract class AbstractSuperArray<T extends Number> implements SuperArray<T> {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractSuperArray.class);
+
+    static ResourceLeakDetector<SuperArray<?>> leakDetector;
+
+    static {
+        leakDetector = new ResourceLeakDetector<>("com.shallowinggg.util.array.SuperArray");
+    }
 
     private final long memory;
     private final long size;
@@ -33,11 +42,6 @@ public abstract class AbstractSuperArray<T extends Number> implements SuperArray
     @Override
     public long memoryAddress() {
         return memory;
-    }
-
-    @Override
-    public void sort(Comparator<? super T> c) {
-
     }
 
     @Override
@@ -115,6 +119,14 @@ public abstract class AbstractSuperArray<T extends Number> implements SuperArray
         return PlatformDependent.getDouble(memory + index * PrimitiveType.DOUBLE.getSize());
     }
 
+    /**
+     * 快速置0
+     *
+     * @param len8 8字节数量
+     * @param len4 4字节数量
+     * @param len2 2字节数量
+     * @param len1 1字节数量
+     */
     void fill0(long len8, long len4, long len2, long len1) {
         long index = memoryAddress();
         for(long i = 0; i < len8; ++i) {
@@ -135,14 +147,19 @@ public abstract class AbstractSuperArray<T extends Number> implements SuperArray
         }
     }
 
+    /**
+     * 拷贝内存
+     *
+     * @param src 源地址
+     * @param dest 目的地址
+     * @param bytes 拷贝字节数
+     */
     void copyMemory(long src, long dest, long bytes) {
         PlatformDependent.copyMemory(src, dest, bytes);
     }
 
-    private void checkIndex(long index) {
-        if (outOfRange(index, size())) {
-            throw new ArrayIndexOutOfBoundsException("Index: " + index + ", Size: " + size);
-        }
+    void checkIndex(long index) {
+        PreConditions.checkIndex(!outOfRange(index, size()), "Index: %d, size: %d", index, size);
     }
 
     private static boolean outOfRange(long index, long size) {

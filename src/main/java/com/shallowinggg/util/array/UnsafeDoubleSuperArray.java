@@ -11,24 +11,24 @@ import static com.shallowinggg.util.PreConditions.checkState;
 /**
  * @author dingshimin
  */
-public class UnsafeByteSuperArray extends AbstractSuperArray<Byte> {
+public class UnsafeDoubleSuperArray extends AbstractSuperArray<Double> {
 
-    public UnsafeByteSuperArray(long sz) {
-        super(sz, PrimitiveType.BYTE);
+    public UnsafeDoubleSuperArray(long size) {
+        super(size, PrimitiveType.DOUBLE);
     }
 
     @Override
-    public void set(long index, Byte val) {
-        setByte(index, val);
+    public void set(long index, Double val) {
+        setDouble(index, val);
     }
 
     @Override
-    public Byte get(long index) {
-        return getByte(index);
+    public Double get(long index) {
+        return getDouble(index);
     }
 
     @Override
-    public void forEach(Consumer<? super Byte> action) {
+    public void forEach(Consumer<? super Double> action) {
         checkNotNull(action);
         long size = this.size();
         for (long i = 0; i < size; ++i) {
@@ -37,31 +37,31 @@ public class UnsafeByteSuperArray extends AbstractSuperArray<Byte> {
     }
 
     @Override
-    public Iterator<Byte> iterator() {
+    public Iterator<Double> iterator() {
         return new Itr();
     }
 
     @Override
     public void clear() {
-        SuperArrayUtil.clearBytes(size(), this);
+        SuperArrayUtil.clearLongs(size(), this);
     }
 
     @Override
-    public SuperArray<Byte> slice(long fromIndex, long len) {
-        return new ByteSlicedSuperArray(this, fromIndex, len);
+    public SuperArray<Double> slice(long fromIndex, long len) {
+        return new DoubleSlicedSuperArray(this, fromIndex, len);
     }
 
     @Override
-    public SuperArray<Byte> duplicate(long fromIndex, long len) {
+    public SuperArray<Double> duplicate(long fromIndex, long len) {
         PreConditions.checkIndex(!outOfRange(fromIndex, len, size()),
                 "SuperArray.duplicate(%d, %d)", fromIndex, len);
-        UnsafeByteSuperArray retArray = new UnsafeByteSuperArray(len);
-        copyMemory(memoryAddress() + fromIndex, retArray.memoryAddress(), len);
+        UnsafeDoubleSuperArray retArray = new UnsafeDoubleSuperArray(len);
+        copyMemory(memoryAddress() + fromIndex, retArray.memoryAddress(), len * PrimitiveType.DOUBLE.getSize());
         return retArray;
     }
 
     @Override
-    public SuperArray<Byte> unwrap() {
+    public SuperArray<Double> unwrap() {
         return null;
     }
 
@@ -69,24 +69,24 @@ public class UnsafeByteSuperArray extends AbstractSuperArray<Byte> {
         @Override
         public void remove() {
             checkState(lastRet >= 0);
-            set(lastRet, (byte) 0);
+            set(lastRet, (double) 0);
             cursor = lastRet;
             lastRet = -1;
         }
     }
 
-    private static class ByteSlicedSuperArray extends AbstractSlicedSuperArray<Byte> {
-        ByteSlicedSuperArray(SuperArray<Byte> superArray, long from, long len) {
+    private static class DoubleSlicedSuperArray extends AbstractSlicedSuperArray<Double> {
+        DoubleSlicedSuperArray(SuperArray<Double> superArray, long from, long len) {
             super(superArray, from, len);
         }
 
         @Override
-        public Iterator<Byte> iterator() {
+        public Iterator<Double> iterator() {
             return new AbstractItr() {
                 @Override
                 public void remove() {
                     checkState(lastRet >= 0);
-                    set(lastRet, (byte) 0);
+                    set(lastRet, (double) 0);
                     cursor = lastRet;
                     lastRet = -1;
                 }
@@ -95,7 +95,7 @@ public class UnsafeByteSuperArray extends AbstractSuperArray<Byte> {
 
         @Override
         public void clear() {
-            SuperArrayUtil.clearBytes(size(), this);
+            SuperArrayUtil.clearLongs(size(), this);
         }
     }
 }

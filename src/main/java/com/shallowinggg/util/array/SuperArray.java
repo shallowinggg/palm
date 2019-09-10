@@ -1,6 +1,5 @@
 package com.shallowinggg.util.array;
 
-import java.util.Comparator;
 import java.util.Iterator;
 
 /**
@@ -44,15 +43,6 @@ public interface SuperArray<T extends Number> extends Iterable<T> {
 
 
     /**
-     * 使用给定的比较器{@link Comparator}对数组中的元素进行排序。
-     * 如果不提供比较器，那么将元素必须实现{@link Comparable}接口，
-     * 并且使用元素的自然顺序{@link Comparable}进行排序。
-     *
-     * @param c 比较器
-     */
-    void sort(Comparator<? super T> c);
-
-    /**
      * 将所有元素的值设置为0
      */
     void clear();
@@ -74,13 +64,27 @@ public interface SuperArray<T extends Number> extends Iterable<T> {
      * 注意：禁止对返回数组调用{@link #free()}操作，当源数组
      * 调用{@link #free()}操作后，不能操作返回数组。
      *
-     * @param fromIndex 开始下标，包含
+     * @param fromIndex 开始下标
      * @param len 长度
      * @return 子数组
      */
     SuperArray<T> slice(long fromIndex, long len);
 
+    /**
+     * 获取[fromIndex, toIndex = fromIndex + len)范围内的元素。
+     * 如果fromIndex与toIndex的值相等，那么将会返回一个空数组。
+     * 返回数组是源数组的拷贝，改变它将不会影响源数组。
+     *
+     * @param fromIndex 开始下标
+     * @param len 长度
+     * @return 子数组
+     */
     SuperArray<T> duplicate(long fromIndex, long len);
 
+    /**
+     *
+     *
+     * @return
+     */
     SuperArray<T> unwrap();
 }
