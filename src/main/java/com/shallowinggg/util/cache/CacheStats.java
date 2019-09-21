@@ -6,34 +6,52 @@ import java.util.Objects;
 
 import static com.shallowinggg.util.PreConditions.checkArgument;
 
+/**
+ * @author shallowinggg
+ */
 public class CacheStats {
+
+    /**
+     * 命中次数
+     */
     private final long hitCount;
+
+    /**
+     * 未命中次数
+     */
     private final long missCount;
+
+    /**
+     * 加载成功次数
+     */
     private final long loadSuccessCount;
+
+    /**
+     * 加载失败次数
+     */
     private final long loadExceptionCount;
+    /**
+     * 总加载耗时
+     */
     private final long totalLoadTime;
-    private final long evictionCount;
 
     public CacheStats(
             long hitCount,
             long missCount,
             long loadSuccessCount,
             long loadExceptionCount,
-            long totalLoadTime,
-            long evictionCount) {
+            long totalLoadTime) {
         checkArgument(hitCount >= 0);
         checkArgument(missCount >= 0);
         checkArgument(loadSuccessCount >= 0);
         checkArgument(loadExceptionCount >= 0);
         checkArgument(totalLoadTime >= 0);
-        checkArgument(evictionCount >= 0);
 
         this.hitCount = hitCount;
         this.missCount = missCount;
         this.loadSuccessCount = loadSuccessCount;
         this.loadExceptionCount = loadExceptionCount;
         this.totalLoadTime = totalLoadTime;
-        this.evictionCount = evictionCount;
     }
 
     public long requestCount() {
@@ -84,18 +102,13 @@ public class CacheStats {
         return (totalLoadCount == 0) ? 0.0 : (double) totalLoadTime / totalLoadCount;
     }
 
-    public long evictionCount() {
-        return evictionCount;
-    }
-
     public CacheStats minus(CacheStats other) {
         return new CacheStats(
                 Math.max(0, hitCount - other.hitCount),
                 Math.max(0, missCount - other.missCount),
                 Math.max(0, loadSuccessCount - other.loadSuccessCount),
                 Math.max(0, loadExceptionCount - other.loadExceptionCount),
-                Math.max(0, totalLoadTime - other.totalLoadTime),
-                Math.max(0, evictionCount - other.evictionCount));
+                Math.max(0, totalLoadTime - other.totalLoadTime));
     }
 
     public CacheStats plus(CacheStats other) {
@@ -104,14 +117,13 @@ public class CacheStats {
                 missCount + other.missCount,
                 loadSuccessCount + other.loadSuccessCount,
                 loadExceptionCount + other.loadExceptionCount,
-                totalLoadTime + other.totalLoadTime,
-                evictionCount + other.evictionCount);
+                totalLoadTime + other.totalLoadTime);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-                hitCount, missCount, loadSuccessCount, loadExceptionCount, totalLoadTime, evictionCount);
+                hitCount, missCount, loadSuccessCount, loadExceptionCount, totalLoadTime);
     }
 
     @Override
@@ -122,8 +134,7 @@ public class CacheStats {
                     && missCount == other.missCount
                     && loadSuccessCount == other.loadSuccessCount
                     && loadExceptionCount == other.loadExceptionCount
-                    && totalLoadTime == other.totalLoadTime
-                    && evictionCount == other.evictionCount;
+                    && totalLoadTime == other.totalLoadTime;
         }
         return false;
     }
@@ -135,7 +146,6 @@ public class CacheStats {
                 ", missCount=" + missCount +
                 ", loadSuccessCount" + loadSuccessCount +
                 ", loadExceptionCount" + loadExceptionCount +
-                ", totalLoadTime" + totalLoadTime +
-                ", evictionCount" + evictionCount + "}";
+                ", totalLoadTime" + totalLoadTime + "}";
     }
 }

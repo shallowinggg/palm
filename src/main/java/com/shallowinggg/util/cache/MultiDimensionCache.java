@@ -43,8 +43,14 @@ import static com.shallowinggg.util.PreConditions.*;
  * @author shallowinggg
  * @date 2019-08-04
  */
+@Deprecated
 public class MultiDimensionCache<V> {
     private static final Logger LOG = LoggerFactory.getLogger(MultiDimensionCache.class);
+
+    private static final int ST_UNINITIALIZED = 0;
+    private static final int ST_INITIALIZING = 1;
+    private static final int ST_INITIALIZED = 2;
+
 
     /**
      * 缓存值列表。
@@ -91,12 +97,7 @@ public class MultiDimensionCache<V> {
     /**
      * 写后过期时间
      */
-    private long expireAfterWriteNanos;
-
-    /**
-     * 读后过期时间
-     */
-    private long expireAfterAccessNanos;
+    private long expireAfterWriteNano;
 
     /**
      * 刷新时间
@@ -107,7 +108,8 @@ public class MultiDimensionCache<V> {
     private int queries;
 
     private CacheLoader<V> cacheLoader;
-    private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+    private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1,
+            r -> new Thread("MultiDimensionCache-refreshThread"));
 
     MultiDimensionCache(CacheBuilder<? super V> builder, CacheLoader<V> loader, TypeReference<V> type) {
         this.cacheLoader = loader;
@@ -116,14 +118,13 @@ public class MultiDimensionCache<V> {
         this.initialCapacity = builder.getInitialCapacity();
         this.clearExpireThreshold = builder.getClearExpireThreshold();
         this.strength = builder.getStrength();
-        this.expireAfterWriteNanos = builder.getExpireAfterWriteNanos();
-        this.expireAfterAccessNanos = builder.getExpireAfterAccessNanos();
-        this.refreshNanos = builder.getRefreshNanos();
+        this.expireAfterWriteNano = builder.getExpireAfterWriteNanos();
+        this.refreshNanos = builder.getRefreshNano();
         this.values = new ArrayList<>(initialCapacity);
 
         LOG.debug("strict: " + strict + ", initialCapacity: " + initialCapacity + ", clearExpireThreshold: " + clearExpireThreshold
-                + ", strength: " + strength + ", expireAfterWriteNanos: " + expireAfterWriteNanos + ", expireAfterAccessNanos: "
-                + expireAfterAccessNanos + ", refreshNanos: " + refreshNanos);
+                + ", strength: " + strength + ", expireAfterWriteNano: " + expireAfterWriteNano + ", expireAfterAccessNano: "
+                + refreshNanos);
 
         @SuppressWarnings("unchecked")
         Class<V> clazz = (Class<V>) type.getType();
@@ -167,9 +168,9 @@ public class MultiDimensionCache<V> {
             MethodWrapper m;
             try {
                 if (field.getType() == boolean.class || field.getType() == Boolean.class) {
-                    m = MethodWrapper.findGetterMethod(clazz, getterMethodName(fieldName, true));
+                    m = MethodWrapper.findMethod(clazz, getterMethodName(fieldName, true));
                 } else {
-                    m = MethodWrapper.findGetterMethod(clazz, getterMethodName(fieldName, false));
+                    m = MethodWrapper.findMethod(clazz, getterMethodName(fieldName, false));
                 }
                 getterMethods.put(fieldName, m);
             } catch (NoSuchMethodException e) {
@@ -490,7 +491,6 @@ public class MultiDimensionCache<V> {
         LongAdder misses = new LongAdder();
         LongAdder loadSuccess = new LongAdder();
         LongAdder loadException = new LongAdder();
-        LongAdder eviction = new LongAdder();
         LongAdder totalLoadTime = new LongAdder();
 
         @Override
@@ -516,14 +516,9 @@ public class MultiDimensionCache<V> {
         }
 
         @Override
-        public void recordEviction(int count) {
-            eviction.add(count);
-        }
-
-        @Override
         public CacheStats snapshot() {
             return new CacheStats(hits.sum(), misses.sum(), loadSuccess.sum(), loadException.sum(),
-                    totalLoadTime.sum(), eviction.sum());
+                    totalLoadTime.sum());
         }
     }
 
@@ -589,13 +584,6 @@ public class MultiDimensionCache<V> {
         void recordLoadException(long loadTime);
 
         /**
-         * 记录过期缓存的条目数
-         *
-         * @param count 过期条目数
-         */
-        void recordEviction(int count);
-
-        /**
          * 获取当前记录次数的镜像
          *
          * @return 镜像
@@ -604,15 +592,10 @@ public class MultiDimensionCache<V> {
     }
 
     private boolean isAlive(ReferenceEntry<V> entry, long now) {
-        if (expireAfterWriteNanos == 0 && expireAfterAccessNanos == 0) {
+        if (expireAfterWriteNano == 0) {
             return true;
-        } else if (expireAfterWriteNanos != 0 && expireAfterAccessNanos != 0) {
-            return now - entry.getWriteTime() < expireAfterWriteNanos
-                    && now - entry.getAccessTime() < expireAfterAccessNanos;
-        } else if (expireAfterAccessNanos != 0) {
-            return now - entry.getAccessTime() < expireAfterAccessNanos;
         } else {
-            return now - entry.getWriteTime() < expireAfterWriteNanos;
+            return now - entry.getWriteTime() < expireAfterWriteNano;
         }
     }
 

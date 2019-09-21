@@ -3,6 +3,9 @@ package com.shallowinggg.util.reflect;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
+/**
+ * @author shallowinggg
+ */
 public class TypeReference<T> {
     private final Type type;
 

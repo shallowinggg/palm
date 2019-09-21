@@ -49,7 +49,7 @@ public class MethodWrapper {
         return method.invoke(args[0], params);
     }
 
-    public static MethodWrapper findGetterMethod(Class<?> clazz, String name, Class<?>... params) throws NoSuchMethodException {
+    public static MethodWrapper findMethod(Class<?> clazz, String name, Class<?>... params) throws NoSuchMethodException {
         Object maybeException;
         if (System.getSecurityManager() != null) {
             maybeException = AccessController.doPrivileged((PrivilegedAction<Object>) () -> {

@@ -10,10 +10,13 @@ import java.util.function.Supplier;
 import static com.shallowinggg.util.PreConditions.*;
 import static com.shallowinggg.util.cache.MultiDimensionCache.*;
 
+/**
+ * @author shallowinggg
+ */
 public class CacheBuilder<V> {
     private static final int DEFAULT_INITIAL_CAPACITY = 16;
-    private static final int DEFAULT_EXPIRATION_NANOS = 0;
-    private static final int DEFAULT_REFRESH_NANOS = 0;
+    private static final int DEFAULT_EXPIRATION_NANO = 0;
+    private static final int DEFAULT_REFRESH_NANO = 0;
     private static final int DEFAULT_CLEAR_EXPIRE_THRESHOLD = 1000;
 
     private static final Supplier<? extends StatsCounter> NULL_STATS_COUNTER =
@@ -35,17 +38,13 @@ public class CacheBuilder<V> {
                 }
 
                 @Override
-                public void recordEviction(int count) {
-                }
-
-                @Override
                 public CacheStats snapshot() {
                     return EMPTY_STATS;
                 }
             };
 
     private static final Supplier<StatsCounter> CACHE_STATS_COUNTER = SimpleStatsCounter::new;
-    private static final CacheStats EMPTY_STATS = new CacheStats(0,0,0,0,0,0);
+    private static final CacheStats EMPTY_STATS = new CacheStats(0,0,0,0,0);
 
     private static final Logger LOG = LoggerFactory.getLogger(CacheBuilder.class);
 
@@ -133,7 +132,7 @@ public class CacheBuilder<V> {
     }
 
     long getExpireAfterWriteNanos() {
-        return (expireAfterWriteNanos == UNSET_INT) ? DEFAULT_EXPIRATION_NANOS : expireAfterWriteNanos;
+        return (expireAfterWriteNanos == UNSET_INT) ? DEFAULT_EXPIRATION_NANO : expireAfterWriteNanos;
     }
 
 
@@ -149,7 +148,7 @@ public class CacheBuilder<V> {
 
     long getExpireAfterAccessNanos() {
         return (expireAfterAccessNanos == UNSET_INT)
-                ? DEFAULT_EXPIRATION_NANOS
+                ? DEFAULT_EXPIRATION_NANO
                 : expireAfterAccessNanos;
     }
 
@@ -161,8 +160,8 @@ public class CacheBuilder<V> {
         return this;
     }
 
-    long getRefreshNanos() {
-        return (refreshNanos == UNSET_INT) ? DEFAULT_REFRESH_NANOS : refreshNanos;
+    long getRefreshNano() {
+        return (refreshNanos == UNSET_INT) ? DEFAULT_REFRESH_NANO : refreshNanos;
     }
 
     public CacheBuilder<V> strict(boolean strict) {
