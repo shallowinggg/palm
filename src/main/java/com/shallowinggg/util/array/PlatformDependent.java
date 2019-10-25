@@ -8,7 +8,6 @@ import sun.misc.Unsafe;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.ByteOrder;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
@@ -22,14 +21,8 @@ public class PlatformDependent {
     private static final Method ALLOCATE_ARRAY_METHOD;
     private static final Object INTERNAL_UNSAFE;
 
-    public static final boolean BIG_ENDIAN_BYTE_ORDER = ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN;
-    private static final long BYTE_ARRAY_BASE_OFFSET;
-    private static final long SHORT_ARRAY_BASE_OFFSET;
-    private static final long CHAR_ARRAY_BASE_OFFSET;
-    private static final long INT_ARRAY_BASE_OFFSET;
-    private static final long FLOAT_ARRAY_BASE_OFFSET;
-    private static final long LONG_ARRAY_BASE_OFFSET;
-    private static final long DOUBLE_ARRAY_BASE_OFFSET;
+    private static final long ARRAY_BASE_OFFSET;
+    private static final int OBJECT_REFERENCE_SIZE;
 
     static {
         Unsafe unsafe;
@@ -58,37 +51,37 @@ public class PlatformDependent {
             // There are assumptions made where ever BYTE_ARRAY_BASE_OFFSET is used (equals, hashCodeAscii, and
             // primitive accessors) that arrayIndexScale == 1, and results are undefined if this is not the case.
             boolean usingUnsafe = true;
-            long byteArrayIndexScale = unsafe.arrayIndexScale(byte[].class);
+            int byteArrayIndexScale = unsafe.arrayIndexScale(byte[].class);
             if (byteArrayIndexScale != 1) {
                 LOG.debug("unsafe.arrayIndexScale is {} (expected: 1). Not using unsafe.", byteArrayIndexScale);
                 usingUnsafe = false;
             }
-            long shortArrayIndexScale = unsafe.arrayIndexScale(short[].class);
+            int shortArrayIndexScale = unsafe.arrayIndexScale(short[].class);
             if (shortArrayIndexScale != 2) {
                 LOG.debug("unsafe.arrayIndexScale is {} (expected: 1). Not using unsafe.", shortArrayIndexScale);
                 usingUnsafe = false;
             }
-            long charArrayIndexScale = unsafe.arrayIndexScale(char[].class);
+            int charArrayIndexScale = unsafe.arrayIndexScale(char[].class);
             if (charArrayIndexScale != 2) {
                 LOG.debug("unsafe.arrayIndexScale is {} (expected: 1). Not using unsafe.", charArrayIndexScale);
                 usingUnsafe = false;
             }
-            long intArrayIndexScale = unsafe.arrayIndexScale(int[].class);
+            int intArrayIndexScale = unsafe.arrayIndexScale(int[].class);
             if (intArrayIndexScale != 4) {
                 LOG.debug("unsafe.arrayIndexScale is {} (expected: 1). Not using unsafe.", intArrayIndexScale);
                 usingUnsafe = false;
             }
-            long floatArrayIndexScale = unsafe.arrayIndexScale(float[].class);
+            int floatArrayIndexScale = unsafe.arrayIndexScale(float[].class);
             if (floatArrayIndexScale != 4) {
                 LOG.debug("unsafe.arrayIndexScale is {} (expected: 1). Not using unsafe.", floatArrayIndexScale);
                 usingUnsafe = false;
             }
-            long longArrayIndexScale = unsafe.arrayIndexScale(long[].class);
+            int longArrayIndexScale = unsafe.arrayIndexScale(long[].class);
             if (longArrayIndexScale != 8) {
                 LOG.debug("unsafe.arrayIndexScale is {} (expected: 1). Not using unsafe.", longArrayIndexScale);
                 usingUnsafe = false;
             }
-            long doubleArrayIndexScale = unsafe.arrayIndexScale(double[].class);
+            int doubleArrayIndexScale = unsafe.arrayIndexScale(double[].class);
             if (doubleArrayIndexScale != 8) {
                 LOG.debug("unsafe.arrayIndexScale is {} (expected: 1). Not using unsafe.", doubleArrayIndexScale);
                 usingUnsafe = false;
@@ -101,23 +94,10 @@ public class PlatformDependent {
         UNSAFE = unsafe;
 
         if (unsafe == null) {
-            BYTE_ARRAY_BASE_OFFSET = -1;
-            SHORT_ARRAY_BASE_OFFSET = -1;
-            CHAR_ARRAY_BASE_OFFSET = -1;
-            INT_ARRAY_BASE_OFFSET = -1;
-            FLOAT_ARRAY_BASE_OFFSET = -1;
-            LONG_ARRAY_BASE_OFFSET = -1;
-            DOUBLE_ARRAY_BASE_OFFSET = -1;
-
-            ALLOCATE_ARRAY_METHOD = null;
+            throw new RuntimeException("sun.misc.Unsafe.theUnsafe: unavailable");
         } else {
-            BYTE_ARRAY_BASE_OFFSET = UNSAFE.arrayBaseOffset(byte[].class);
-            SHORT_ARRAY_BASE_OFFSET = UNSAFE.arrayBaseOffset(short[].class);
-            CHAR_ARRAY_BASE_OFFSET = UNSAFE.arrayBaseOffset(char[].class);
-            INT_ARRAY_BASE_OFFSET = UNSAFE.arrayBaseOffset(int[].class);
-            FLOAT_ARRAY_BASE_OFFSET = UNSAFE.arrayBaseOffset(float[].class);
-            LONG_ARRAY_BASE_OFFSET = UNSAFE.arrayBaseOffset(long[].class);
-            DOUBLE_ARRAY_BASE_OFFSET = UNSAFE.arrayBaseOffset(double[].class);
+            ARRAY_BASE_OFFSET = UNSAFE.arrayBaseOffset(byte[].class);
+            OBJECT_REFERENCE_SIZE = UNSAFE.arrayIndexScale(Object[].class);
 
             if (javaVersion() >= 9) {
                 Object maybeException = AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
@@ -299,6 +279,10 @@ public class PlatformDependent {
         return UNSAFE.getDouble(index);
     }
 
+    static int oopSize() {
+        return OBJECT_REFERENCE_SIZE;
+    }
+
     private static ClassLoader getClassLoader(Class<?> clazz) {
         if (System.getSecurityManager() == null) {
             return clazz.getClassLoader();
@@ -307,7 +291,7 @@ public class PlatformDependent {
         }
     }
 
-    static int javaVersion() {
+    private static int javaVersion() {
         return JAVA_VERSION;
     }
 
@@ -322,8 +306,7 @@ public class PlatformDependent {
         return majorVersion(SystemPropertyUtil.get("java.specification.version", "1.6"));
     }
 
-    // Package-private for testing only
-    static int majorVersion(final String javaSpecVersion) {
+    private static int majorVersion(final String javaSpecVersion) {
         final String[] components = javaSpecVersion.split("\\.");
         final int[] version = new int[components.length];
         for (int i = 0; i < components.length; i++) {
