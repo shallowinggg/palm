@@ -1,10 +1,10 @@
-package com.shallowinggg.util.cache;
+package com.shallowinggg.palm.cache;
 
 import com.sun.istack.internal.Nullable;
 
 import java.util.Objects;
 
-import static com.shallowinggg.util.PreConditions.checkArgument;
+import static com.shallowinggg.palm.PreConditions.checkArgument;
 
 public class CacheStats {
     private final long hitCount;

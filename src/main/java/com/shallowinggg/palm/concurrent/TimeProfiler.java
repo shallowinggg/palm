@@ -1,7 +1,7 @@
-package com.shallowinggg.util.concurrent;
+package com.shallowinggg.palm.concurrent;
 
-import com.shallowinggg.util.StringUtil;
-import com.shallowinggg.util.reflect.MethodUtil;
+import com.shallowinggg.palm.StringUtil;
+import com.shallowinggg.palm.reflect.MethodUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

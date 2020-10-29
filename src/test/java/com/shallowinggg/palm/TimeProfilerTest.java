@@ -1,6 +1,6 @@
-package com.shallowinggg.util;
+package com.shallowinggg.palm;
 
-import com.shallowinggg.util.concurrent.TimeProfiler;
+import com.shallowinggg.palm.concurrent.TimeProfiler;
 import org.junit.Test;
 
 import java.util.concurrent.ThreadLocalRandom;

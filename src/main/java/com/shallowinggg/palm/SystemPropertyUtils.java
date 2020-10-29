@@ -1,4 +1,4 @@
-package com.shallowinggg.util;
+package com.shallowinggg.palm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,9 +9,9 @@ import java.security.PrivilegedAction;
 /**
  * A collection of utility methods to retrieve and parse the values of the Java system properties.
  */
-public final class SystemPropertyUtil {
+public final class SystemPropertyUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(SystemPropertyUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(SystemPropertyUtils.class);
 
     /**
      * Returns {@code true} if and only if the system property with the specified {@code key}
@@ -162,7 +162,7 @@ public final class SystemPropertyUtil {
         return def;
     }
 
-    private SystemPropertyUtil() {
+    private SystemPropertyUtils() {
         // Unused
     }
 }

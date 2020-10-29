@@ -1,14 +1,14 @@
-package com.shallowinggg.util.cache;
+package com.shallowinggg.palm.cache;
 
-import com.shallowinggg.util.reflect.TypeReference;
+import com.shallowinggg.palm.reflect.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import static com.shallowinggg.util.PreConditions.*;
-import static com.shallowinggg.util.cache.MultiDimensionCache.*;
+import static com.shallowinggg.palm.PreConditions.*;
+import static com.shallowinggg.palm.cache.MultiDimensionCache.*;
 
 public class CacheBuilder<V> {
     private static final int DEFAULT_INITIAL_CAPACITY = 16;

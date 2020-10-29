@@ -1,7 +1,7 @@
-package com.shallowinggg.util.cache;
+package com.shallowinggg.palm.cache;
 
-import com.shallowinggg.util.reflect.MethodWrapper;
-import com.shallowinggg.util.reflect.TypeReference;
+import com.shallowinggg.palm.reflect.MethodWrapper;
+import com.shallowinggg.palm.reflect.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
-import static com.shallowinggg.util.PreConditions.*;
+import static com.shallowinggg.palm.PreConditions.*;
 
 /**
  * 此类的作用是作为运行时缓存存在，目的是避免构建多个redis hash缓存，

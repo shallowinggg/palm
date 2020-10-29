@@ -1,4 +1,4 @@
-package com.shallowinggg.util.reflect;
+package com.shallowinggg.palm.reflect;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

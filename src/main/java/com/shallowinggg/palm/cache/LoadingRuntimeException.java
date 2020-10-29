@@ -1,4 +1,4 @@
-package com.shallowinggg.util.cache;
+package com.shallowinggg.palm.cache;
 
 public class LoadingRuntimeException extends RuntimeException {
 

@@ -1,4 +1,4 @@
-package com.shallowinggg.util.reflect;
+package com.shallowinggg.palm.reflect;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -10,14 +10,14 @@ import java.security.PrivilegedAction;
  * @author dingshimin
  */
 public class MethodWrapper {
-    private static MethodHandles.Lookup lookup;
+    private static final MethodHandles.Lookup lookup;
 
-    private Method method;
+    private final Method method;
     private MethodHandle mh;
 
     public MethodWrapper(Method method) {
         this.method = method;
-        if(System.getSecurityManager() != null) {
+        if (System.getSecurityManager() != null) {
             AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
                 method.setAccessible(true);
                 return null;
@@ -34,14 +34,14 @@ public class MethodWrapper {
     }
 
     public Object invoke(Object... args) throws Throwable {
-        if(mh != null) {
-            if(args.length == 1) {
+        if (mh != null) {
+            if (args.length == 1) {
                 return mh.invoke(args[0]);
             }
             return mh.invoke(args);
         }
 
-        if(args.length == 1) {
+        if (args.length == 1) {
             return method.invoke(args[0]);
         }
         Object[] params = new Object[args.length - 1];
